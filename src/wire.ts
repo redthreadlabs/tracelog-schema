@@ -26,7 +26,7 @@ export interface LogBatch {
   session_ref?: string;
   device_id?: string;
   events: LogEventItem[];
-  timers: TimerItem[];
+  perfs: LogPerfItem[];
 }
 
 export interface LogEventItem {
@@ -51,18 +51,18 @@ export interface LogEventItem {
   tz_offset?: number;
 }
 
-export interface TimerItem {
+export interface LogPerfItem {
   /** 16-char hex ID, generated client-side */
   id: string;
   /** 32-char hex trace ID, shared by parent + children */
   trace_id: string;
-  /** ID of the root timer in this trace */
+  /** ID of the root perf in this trace */
   root_id: string;
-  /** 16-char hex ID of parent timer (absent for root timers) */
+  /** 16-char hex ID of parent perf (absent for root perfs) */
   parent_id?: string;
   /** Operation name, e.g. 'content-store-startup' */
   name: string;
-  /** Timer category. Default: 'client-perf' */
+  /** Perf category. Default: 'client-perf' */
   type: string;
   /** Start time, epoch milliseconds */
   timestamp: number;

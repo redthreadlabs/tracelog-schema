@@ -1,6 +1,6 @@
 {
   "name": "@redthreadlabs/tracelog-schema",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shared contract for the tracelog suite: record kinds, S3 key layout, metadata sidecar, and the /logs wire format",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
