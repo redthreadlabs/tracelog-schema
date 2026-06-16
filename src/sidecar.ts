@@ -44,8 +44,8 @@ function pad2(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-/** epoch-ms → UTC hour-bucket label 'YYYY-MM-DDTHH'. */
-export function hourBucket(ms: number): string {
+/** epoch-ms → UTC hour-interval label 'YYYY-MM-DDTHH'. */
+export function hourInterval(ms: number): string {
   const d = new Date(ms);
   return (
     `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}` +
@@ -117,8 +117,8 @@ export class MetaAccumulator {
       this.malformed++;
       return;
     }
-    const bucket = hourBucket(tsUs / 1000); // serialized timestamps are epoch-µs
-    const byKind = this.intervals[bucket] || (this.intervals[bucket] = Object.create(null));
+    const interval = hourInterval(tsUs / 1000); // serialized timestamps are epoch-µs
+    const byKind = this.intervals[interval] || (this.intervals[interval] = Object.create(null));
     byKind[kind] = (byKind[kind] || 0) + 1;
   }
 

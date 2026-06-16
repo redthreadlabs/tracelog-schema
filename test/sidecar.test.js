@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 
 const {
   MetaAccumulator,
-  hourBucket,
+  hourInterval,
   sidecarKey,
   SIDECAR_SUFFIX,
 } = require('../dist/sidecar');
@@ -22,11 +22,11 @@ test('sidecarKey appends the suffix', () => {
   assert.equal(sidecarKey('server/d/h.jsonl.gz'), 'server/d/h.jsonl.gz' + SIDECAR_SUFFIX);
 });
 
-test('hourBucket labels by UTC hour', () => {
-  assert.equal(hourBucket(Date.UTC(2026, 5, 15, 9, 30)), '2026-06-15T09');
+test('hourInterval labels by UTC hour', () => {
+  assert.equal(hourInterval(Date.UTC(2026, 5, 15, 9, 30)), '2026-06-15T09');
 });
 
-test('MetaAccumulator counts records, buckets by hour×kind, flags malformed', () => {
+test('MetaAccumulator counts records, groups by hour-interval×kind, flags malformed', () => {
   const acc = new MetaAccumulator();
   acc.addChunk(
     jsonl(
