@@ -21,7 +21,7 @@
  * agent and viewer never drift on this layout.
  */
 
-export interface KeyVars {
+export interface ObjectKeyVars {
   channel: string;
   interval: string;
   host: string;
@@ -31,7 +31,7 @@ export interface KeyVars {
   current?: boolean;
 }
 
-export interface ParsedKey {
+export interface ParsedObjectKey {
   key: string;
   channel: string;
   interval: string;
@@ -45,7 +45,7 @@ export interface ParsedKey {
 }
 
 /** Build a log object's key. Pass `gzip` to append the `.gz` suffix. */
-export function buildKey(vars: KeyVars, gzip = false): string {
+export function buildKey(vars: ObjectKeyVars, gzip = false): string {
   let basename = vars.host;
   if (vars.seq && vars.seq > 0) basename += `_${vars.seq}`;
   if (vars.current) basename += '_current';
@@ -61,7 +61,7 @@ export function parseKey(
   size = 0,
   lastModified?: Date,
   etag?: string,
-): ParsedKey | null {
+): ParsedObjectKey | null {
   const parts = key.split('/');
   if (parts.length !== 3) return null;
   const [channel, interval, file] = parts;
@@ -113,7 +113,7 @@ export function intervalSpan(interval: string): [number, number] | null {
 
 /** Whether a file's interval overlaps [startMs, endMs]. Unknown layout → kept. */
 export function overlapsRange(
-  file: Pick<ParsedKey, 'interval'>,
+  file: Pick<ParsedObjectKey, 'interval'>,
   startMs: number,
   endMs: number,
 ): boolean {
@@ -128,7 +128,7 @@ export function overlapsRange(
  * finalized sibling is kept — it is either live (today) or a dead host's only
  * copy.
  */
-export function dedupeCurrents<T extends Pick<ParsedKey, 'channel' | 'interval' | 'host' | 'seq' | 'current'>>(
+export function dedupeCurrents<T extends Pick<ParsedObjectKey, 'channel' | 'interval' | 'host' | 'seq' | 'current'>>(
   files: T[],
 ): T[] {
   const finalized = new Set<string>();
