@@ -2,16 +2,28 @@
   "name": "@redthreadlabs/tracelog-schema",
   "version": "0.5.0",
   "description": "Shared contract for the tracelog suite: record kinds, S3 key layout, metadata sidecar, and the /logs wire format",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+  "keywords": [
+    "tracelog",
+    "apm",
+    "telemetry",
+    "schema"
+  ],
+  "homepage": "https://github.com/redthreadlabs/tracelog-schema#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redthreadlabs/tracelog-schema.git"
   },
+  "license": "BSD-2-Clause",
+  "author": "Benji Smith <benji@redthreadlabs.com>",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "license": "BSD-2-Clause",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
