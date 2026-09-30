@@ -16,6 +16,9 @@
  * source IP) and write to the channel.
  */
 
+/** This package's version: the value a writer puts in {@link RecordOrigin.schema}. */
+export const SCHEMA_VERSION = '0.6.0';
+
 export type JsonValue =
   | string
   | number
@@ -45,16 +48,91 @@ export interface RecordBatch {
   spans: SpanRecord[];
 }
 
+/** Who a visitor is: a person, an agent (an SDK, a CLI, an MCP client), or the system itself. */
+export type VisitorKind = 'human' | 'agent' | 'system';
+
+export const VISITOR_KINDS: readonly VisitorKind[] = ['human', 'agent', 'system'];
+
+/**
+ * The surface a record came through: a browser page, a plain HTTP fetch, a
+ * CLI, an MCP client, an agent thread, an edge (CDN) log line, or the server
+ * acting on its own behalf.
+ */
+export type Via = 'browser' | 'fetch' | 'cli' | 'mcp' | 'thread' | 'edge' | 'server';
+
+export const VIAS: readonly Via[] = ['browser', 'fetch', 'cli', 'mcp', 'thread', 'edge', 'server'];
+
+/** The long-lived first-party identity behind a record: one per person (or agent), signed in or not. */
+export interface VisitorContext {
+  id: string;
+  kind: VisitorKind;
+}
+
+/**
+ * One visit: a client-generated id, carried explicitly (a new one after 30
+ * minutes without an event, or on a new tab). `n` is the visitor's visit
+ * ordinal, when known.
+ */
+export interface VisitContext {
+  id: string;
+  n?: number;
+}
+
+/** What acted, and through which surface. `agent` names the client software when there is one. */
+export interface ActorContext {
+  agent?: { name: string; version?: string };
+  via: Via;
+}
+
+/** The page a record is about. `release` is the documentation release shown on the page, when it has one. */
+export interface PageContext {
+  url: string;
+  path: string;
+  title?: string;
+  referrer?: string;
+  release?: string;
+}
+
+/** The campaign (UTM) parameters of the visitor's first touch. */
+export interface CampaignContext {
+  source?: string;
+  medium?: string;
+  name?: string;
+  term?: string;
+  content?: string;
+}
+
+/** Location derived server-side from the source IP (the IP itself is not kept). */
+export interface GeoContext {
+  country?: string;
+  region?: string;
+  city?: string;
+}
+
 /**
  * Per-record context, shared by every record kind. `labels` is the arbitrary
  * key-value attribute bag; `user` is the identity the record is attributed to.
- * Mirrors the agent's native `context.labels` / `context.user`.
+ * The analytics sub-objects (`visitor`, `visit`, `actor`, `page`, `campaign`,
+ * `geo`, `entity`) are typed and optional; see docs/ANALYTICS_CONTEXT.md.
+ * Readers ignore sub-objects they do not know.
  */
 export interface RecordContext {
-  /** Arbitrary key-value attributes. */
+  /** Arbitrary key-value attributes. Flat; the place for anything not named below. */
   labels?: Record<string, JsonValue>;
   /** The user this record is attributed to. */
   user?: { id?: string };
+  visitor?: VisitorContext;
+  visit?: VisitContext;
+  actor?: ActorContext;
+  page?: PageContext;
+  campaign?: CampaignContext;
+  geo?: GeoContext;
+  /**
+   * The consumer's own things this record concerns, named by id or address,
+   * e.g. `{ project: "proj_…", docs_page: "/reference/…" }`. One level,
+   * strings only. The key vocabulary belongs to the consumer, not to tracelog.
+   */
+  entity?: Record<string, string>;
 }
 
 /**
@@ -151,6 +229,12 @@ export interface SpanRecord {
 export interface RecordOrigin {
   /** The SDK lifetime (app launch / process run) this RecordOrigin describes. Join key. */
   lifetime_id?: string;
+  /**
+   * The tracelog-schema version the batch was written against, e.g. "0.6.0",
+   * so a reader knows which fields to expect. A client sets it from
+   * {@link SCHEMA_VERSION}.
+   */
+  schema?: string;
   /** Application / service name + version. */
   service: { name: string; version: string };
   /** Runtime, e.g. 'react-native', 'node', 'browser'. */
