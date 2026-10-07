@@ -17,7 +17,7 @@
  */
 
 /** This package's version: the value a writer puts in {@link RecordOrigin.schema}. */
-export const SCHEMA_VERSION = '0.6.0';
+export const SCHEMA_VERSION = '0.7.0';
 
 export type JsonValue =
   | string

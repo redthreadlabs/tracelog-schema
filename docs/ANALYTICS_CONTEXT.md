@@ -46,11 +46,14 @@ a valid `kind`, an `actor` without a valid `via`, a `page` without `url` and
 
 Analytics event `type`s are two dotted words from `ANALYTICS_EVENT_TYPES`:
 `page.view`, `page.leave`, `docs.view`, `docs.search`, `app.action`,
-`verb.call`, `auth.signin`, `auth.signup`, `auth.signout`, `error.client`. The
+`verb.call`, `auth.signin`, `auth.signup`, `auth.signout`, `error.client`,
+`link.out` (a click on a link leaving the site; `labels.href_host`). The
 `audit.<action>` family is open-ended (`isAuditEventType`). `REQUIRED_CONTEXT`
 lists the context each type must carry, as dotted paths under `context`;
 `REQUIRED_FIELDS` lists event fields outside it (`error.client` needs
-`error`). `checkAnalyticsEvent(event)` returns one message per missing path or
+`error`). No type requires `visitor`: a browser without a persistent visitor
+id sends none, and a `visitor`, when present, is checked as above.
+`checkAnalyticsEvent(event)` returns one message per missing path or
 an unknown type, and an empty array for a well-formed event.
 
 Events stay instants. Timings are transactions and spans (`page-load`,

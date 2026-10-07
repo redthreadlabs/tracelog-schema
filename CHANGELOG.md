@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- `link.out` joins `ANALYTICS_EVENT_TYPES`: a click on a link leaving the
+  site, requiring `labels.href_host`.
+- `page.view` no longer requires `context.visitor`; no event type does. A
+  browser without a persistent visitor id sends a record without one, and
+  `sanitizeContext` still checks a `visitor` that is present.
+- `SCHEMA_VERSION` is `0.7.0`.
+
 ## 0.6.0
 
 - `RecordContext` gains optional typed analytics sub-objects: `visitor`

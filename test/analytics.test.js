@@ -37,12 +37,13 @@ const GOOD = {
   'auth.signup': { labels: { method: 'github' } },
   'auth.signout': { labels: { method: 'button' } },
   'error.client': {},
+  'link.out': { labels: { href_host: 'github.com' } },
 };
 
-test('the vocabulary is the ten documented types, all two dotted words', () => {
+test('the vocabulary is the eleven documented types, all two dotted words', () => {
   assert.deepEqual([...ANALYTICS_EVENT_TYPES], [
     'page.view', 'page.leave', 'docs.view', 'docs.search', 'app.action',
-    'verb.call', 'auth.signin', 'auth.signup', 'auth.signout', 'error.client',
+    'verb.call', 'auth.signin', 'auth.signup', 'auth.signout', 'error.client', 'link.out',
   ]);
   for (const t of ANALYTICS_EVENT_TYPES) {
     assert.match(t, /^[a-z]+\.[a-z]+$/);
@@ -76,8 +77,11 @@ test('checkAnalyticsEvent names each missing context path', () => {
   assert.deepEqual(checkAnalyticsEvent({ type: 'page.view' }), [
     'page.view: missing context.page',
     'page.view: missing context.visit',
-    'page.view: missing context.visitor',
   ]);
+  assert.deepEqual(
+    checkAnalyticsEvent({ type: 'link.out', context: { labels: {} } }),
+    ['link.out: missing context.labels.href_host'],
+  );
   assert.deepEqual(
     checkAnalyticsEvent({ type: 'docs.view', context: { ...GOOD['docs.view'], labels: { bytes: 1 }, entity: {} } }),
     ['docs.view: missing context.labels.tokens', 'docs.view: missing context.entity.docs_page'],
@@ -96,6 +100,16 @@ test('checkAnalyticsEvent names each missing context path', () => {
 test('a zero or false label counts as present', () => {
   assert.deepEqual(checkAnalyticsEvent({ type: 'docs.search', context: { labels: { query: 'q', results: 0 } } }), []);
   assert.deepEqual(checkAnalyticsEvent({ type: 'page.leave', context: { labels: { dwell_ms: 0, scroll_max: 0 } } }), []);
+});
+
+test('a browser event without a visitor is valid', () => {
+  const { visitor, ...cookieless } = GOOD['page.view'];
+  assert.deepEqual(checkAnalyticsEvent({ type: 'page.view', context: cookieless }), []);
+  for (const t of ['page.leave', 'docs.view', 'app.action', 'link.out']) {
+    assert.ok(!REQUIRED_CONTEXT[t].some((p) => p.startsWith('visitor')), t);
+    assert.deepEqual(checkAnalyticsEvent({ type: t, context: GOOD[t] }), [], t);
+  }
+  assert.deepEqual(checkAnalyticsEvent({ type: 'error.client', error: { message: 'boom' } }), []);
 });
 
 test('error.client requires the event error field', () => {

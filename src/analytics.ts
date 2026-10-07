@@ -20,6 +20,7 @@ export const ANALYTICS_EVENT_TYPES = [
   'auth.signup',
   'auth.signout',
   'error.client',
+  'link.out',
 ] as const;
 
 export type AnalyticsEventType = (typeof ANALYTICS_EVENT_TYPES)[number];
@@ -40,10 +41,11 @@ export function isAuditEventType(type: unknown): type is AuditEventType {
  * The context each analytics event type must carry, as dotted paths under the
  * event's `context` (`"page"` = the sub-object is present, `"labels.bytes"` =
  * that label is present). `audit.<action>` events require nothing beyond their
- * name.
+ * name. No type requires `visitor`: a browser without a persistent visitor id
+ * sends none.
  */
 export const REQUIRED_CONTEXT: { readonly [T in AnalyticsEventType]: readonly string[] } = {
-  'page.view': ['page', 'visit', 'visitor'],
+  'page.view': ['page', 'visit'],
   'page.leave': ['labels.dwell_ms', 'labels.scroll_max'],
   'docs.view': ['page.path', 'page.release', 'labels.bytes', 'labels.tokens', 'entity.docs_page'],
   'docs.search': ['labels.query', 'labels.results'],
@@ -53,6 +55,7 @@ export const REQUIRED_CONTEXT: { readonly [T in AnalyticsEventType]: readonly st
   'auth.signup': ['labels.method'],
   'auth.signout': ['labels.method'],
   'error.client': [],
+  'link.out': ['labels.href_host'],
 };
 
 /**
