@@ -70,10 +70,18 @@ test('labels keep primitives only; entity keeps strings only', () => {
   assert.deepEqual(out, { labels: { s: 'a', n: 1, b: false }, entity: { project: 'proj_1' } });
 });
 
+test('a visitor without an id keeps its kind', () => {
+  assert.deepEqual(sanitizeContext({ visitor: { kind: 'human' } }), { visitor: { kind: 'human' } });
+  assert.deepEqual(sanitizeContext({ visitor: { kind: 'agent', extra: 1 } }), { visitor: { kind: 'agent' } });
+  assert.equal(sanitizeContext({ visitor: {} }), undefined, 'no kind and no id');
+});
+
 test('a sub-object missing a required field is dropped whole', () => {
   assert.equal(sanitizeContext({ visitor: { id: 'v' } }), undefined, 'visitor without kind');
   assert.equal(sanitizeContext({ visitor: { id: 'v', kind: 'robot' } }), undefined, 'visitor with a bad kind');
   assert.equal(sanitizeContext({ visitor: { id: '', kind: 'human' } }), undefined, 'visitor with an empty id');
+  assert.equal(sanitizeContext({ visitor: { id: 7, kind: 'human' } }), undefined, 'visitor with a non-string id');
+  assert.equal(sanitizeContext({ visitor: { id: null, kind: 'human' } }), undefined, 'visitor with a null id');
   assert.equal(sanitizeContext({ visit: { n: 1 } }), undefined, 'visit without id');
   assert.equal(sanitizeContext({ actor: { agent: { name: 'x' } } }), undefined, 'actor without via');
   assert.equal(sanitizeContext({ actor: { via: 'telepathy' } }), undefined, 'actor with a bad via');

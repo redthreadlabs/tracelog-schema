@@ -76,7 +76,6 @@ test('checkAnalyticsEvent passes a well-formed event of every type', () => {
 test('checkAnalyticsEvent names each missing context path', () => {
   assert.deepEqual(checkAnalyticsEvent({ type: 'page.view' }), [
     'page.view: missing context.page',
-    'page.view: missing context.visit',
   ]);
   assert.deepEqual(
     checkAnalyticsEvent({ type: 'link.out', context: { labels: {} } }),
@@ -102,11 +101,12 @@ test('a zero or false label counts as present', () => {
   assert.deepEqual(checkAnalyticsEvent({ type: 'page.leave', context: { labels: { dwell_ms: 0, scroll_max: 0 } } }), []);
 });
 
-test('a browser event without a visitor is valid', () => {
-  const { visitor, ...cookieless } = GOOD['page.view'];
+test('a browser event without a visitor or a visit is valid', () => {
+  const { visitor, visit, ...cookieless } = GOOD['page.view'];
   assert.deepEqual(checkAnalyticsEvent({ type: 'page.view', context: cookieless }), []);
+  assert.deepEqual(checkAnalyticsEvent({ type: 'page.view', context: { ...cookieless, visitor: { kind: 'human' } } }), []);
   for (const t of ['page.leave', 'docs.view', 'app.action', 'link.out']) {
-    assert.ok(!REQUIRED_CONTEXT[t].some((p) => p.startsWith('visitor')), t);
+    assert.ok(!REQUIRED_CONTEXT[t].some((p) => p.startsWith('visit')), t);
     assert.deepEqual(checkAnalyticsEvent({ type: t, context: GOOD[t] }), [], t);
   }
   assert.deepEqual(checkAnalyticsEvent({ type: 'error.client', error: { message: 'boom' } }), []);

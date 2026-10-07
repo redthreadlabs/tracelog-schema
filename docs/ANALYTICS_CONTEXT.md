@@ -12,7 +12,7 @@ one ingest filter; the event vocabulary is in `src/analytics.ts`.
 interface RecordContext {
   labels?:   Record<string, JsonValue>;   // unchanged: the flat bag
   user?:     { id?: string };             // unchanged
-  visitor?:  { id: string; kind: "human" | "agent" | "system" };
+  visitor?:  { id?: string; kind: "human" | "agent" | "system" };
   visit?:    { id: string; n?: number };
   actor?:    { agent?: { name: string; version?: string };
                via: "browser" | "fetch" | "cli" | "mcp" | "thread" | "edge" | "server" };
@@ -25,8 +25,8 @@ interface RecordContext {
 
 | field | meaning |
 |---|---|
-| `visitor` | The long-lived first-party identity behind the record: one id per person (or per agent credential), signed in or not. `kind` says whether it is a person, an agent, or the system. |
-| `visit` | One visit by a visitor: a client-generated id, carried explicitly (a new id after 30 minutes without an event, or on a new tab). `n` is the visitor's visit ordinal, when known. |
+| `visitor` | The long-lived first-party identity behind the record: one id per person (or per agent credential), signed in or not. `kind` says whether it is a person, an agent, or the system. A visitor without a persistent id (a browser that has not consented) carries `kind` alone. |
+| `visit` | One visit by a visitor: an id carried explicitly when the writer knows it (a new id after 30 minutes without an event, or on a new tab); a record without one gets its visit from the server. `n` is the visitor's visit ordinal, when known. |
 | `actor` | What acted. `via` is the surface the record came through; `agent` names the client software (`claude-code 2.1.280`, `mechbench-cli 0.51.0`) when there is one. |
 | `page` | The page the record is about. `release` is the documentation release shown on the page, when it has one. |
 | `campaign` | The UTM parameters of the visitor's first touch. |
@@ -39,7 +39,7 @@ exported as `SCHEMA_VERSION`), so a reader knows which fields to expect.
 `sanitizeContext(ctx)` keeps the sub-objects with their typed fields, primitive
 values in `labels`, strings in `entity`, and `user.id`; it drops everything
 else, including a sub-object that lacks a required field (a `visitor` without
-a valid `kind`, an `actor` without a valid `via`, a `page` without `url` and
+a valid `kind` or with an `id` that is not a non-empty string, an `actor` without a valid `via`, a `page` without `url` and
 `path`). It does not bound string lengths; the writer's truncation does.
 
 ## Event types
@@ -51,8 +51,9 @@ Analytics event `type`s are two dotted words from `ANALYTICS_EVENT_TYPES`:
 `audit.<action>` family is open-ended (`isAuditEventType`). `REQUIRED_CONTEXT`
 lists the context each type must carry, as dotted paths under `context`;
 `REQUIRED_FIELDS` lists event fields outside it (`error.client` needs
-`error`). No type requires `visitor`: a browser without a persistent visitor
-id sends none, and a `visitor`, when present, is checked as above.
+`error`). No type requires `visitor` or `visit`: a browser without a persistent visitor
+id sends none, and the server assigns visits. A `visitor` or `visit`, when
+present, is checked as above.
 `checkAnalyticsEvent(event)` returns one message per missing path or
 an unknown type, and an empty array for a well-formed event.
 

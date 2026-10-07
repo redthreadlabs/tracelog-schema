@@ -62,16 +62,21 @@ export type Via = 'browser' | 'fetch' | 'cli' | 'mcp' | 'thread' | 'edge' | 'ser
 
 export const VIAS: readonly Via[] = ['browser', 'fetch', 'cli', 'mcp', 'thread', 'edge', 'server'];
 
-/** The long-lived first-party identity behind a record: one per person (or agent), signed in or not. */
+/**
+ * The long-lived first-party identity behind a record: one per person (or
+ * agent), signed in or not. A visitor without a persistent id (a browser that
+ * has not consented) carries `kind` alone.
+ */
 export interface VisitorContext {
-  id: string;
+  id?: string;
   kind: VisitorKind;
 }
 
 /**
- * One visit: a client-generated id, carried explicitly (a new one after 30
- * minutes without an event, or on a new tab). `n` is the visitor's visit
- * ordinal, when known.
+ * One visit: an id carried explicitly when the writer knows it (a new one
+ * after 30 minutes without an event, or on a new tab); a record without one
+ * gets its visit from the server. `n` is the visitor's visit ordinal, when
+ * known.
  */
 export interface VisitContext {
   id: string;

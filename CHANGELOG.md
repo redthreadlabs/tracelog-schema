@@ -4,9 +4,13 @@
 
 - `link.out` joins `ANALYTICS_EVENT_TYPES`: a click on a link leaving the
   site, requiring `labels.href_host`.
-- `page.view` no longer requires `context.visitor`; no event type does. A
-  browser without a persistent visitor id sends a record without one, and
-  `sanitizeContext` still checks a `visitor` that is present.
+- `page.view` no longer requires `context.visitor` or `context.visit`; no
+  event type does. A browser without a persistent visitor id sends a record
+  without one, and the server assigns visits. `sanitizeContext` still checks a
+  `visitor` or `visit` that is present.
+- `VisitorContext.id` is optional: `sanitizeContext` keeps a visitor with a
+  valid `kind` and no `id` (`{kind: "human"}`). A visitor with an `id` is
+  checked as before; an empty or non-string `id` drops it.
 - `SCHEMA_VERSION` is `0.7.0`.
 
 ## 0.6.0

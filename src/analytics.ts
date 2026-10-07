@@ -41,11 +41,11 @@ export function isAuditEventType(type: unknown): type is AuditEventType {
  * The context each analytics event type must carry, as dotted paths under the
  * event's `context` (`"page"` = the sub-object is present, `"labels.bytes"` =
  * that label is present). `audit.<action>` events require nothing beyond their
- * name. No type requires `visitor`: a browser without a persistent visitor id
- * sends none.
+ * name. No type requires `visitor` or `visit`: a browser without a persistent
+ * visitor id sends none, and the server assigns visits.
  */
 export const REQUIRED_CONTEXT: { readonly [T in AnalyticsEventType]: readonly string[] } = {
-  'page.view': ['page', 'visit'],
+  'page.view': ['page'],
   'page.leave': ['labels.dwell_ms', 'labels.scroll_max'],
   'docs.view': ['page.path', 'page.release', 'labels.bytes', 'labels.tokens', 'entity.docs_page'],
   'docs.search': ['labels.query', 'labels.results'],

@@ -61,7 +61,9 @@ function sanitizeLabels(input: unknown): Record<string, string | number | boolea
 }
 
 function sanitizeVisitor(input: unknown): VisitorContext | undefined {
-  if (!isBag(input) || !isString(input.id) || !input.id || !isVisitorKind(input.kind)) return undefined;
+  if (!isBag(input) || !isVisitorKind(input.kind)) return undefined;
+  if (input.id === undefined) return { kind: input.kind };
+  if (!isString(input.id) || !input.id) return undefined;
   return { id: input.id, kind: input.kind };
 }
 
@@ -108,7 +110,8 @@ const GEO_KEYS = ['country', 'region', 'city'] as const;
  * Keep only the known, well-shaped parts of an untrusted record context: the
  * typed sub-objects with their typed fields, primitive values in `labels`,
  * strings in `entity`, and `user.id`. Anything else is dropped, including a
- * sub-object missing a required field (a `visitor` without a valid `kind`, an
+ * sub-object missing a required field (a `visitor` without a valid `kind` or
+ * with an id that is not a non-empty string, an
  * `actor` without a valid `via`, a `page` without `url` and `path`). Returns
  * undefined when nothing survives. Pure; does not bound string lengths.
  */
